@@ -4,11 +4,12 @@ import json
 from os.path import exists
 
 #default args
-memory_dir = "/home/shawn/Programming/ai_stuff/llama.cpp/models/mixtral-8x7b-q50/"
+#memory_dir = "/home/shawn/Programming/ai_stuff/llama.cpp/models/mixtral-8x7b-q50/"
+memory_dir = "./memory/"
 from_online = False
 save_model = False
-path_to_model= "/home/shawn/Programming/ai_stuff/llama.cpp/models/mixtral-8x7b-q50/mixtral-instruct-8x7b-q50.gguf" 
-
+#path_to_model= "/home/shawn/Programming/ai_stuff/llama.cpp/models/mixtral-8x7b-q50/mixtral-instruct-8x7b-q50.gguf" 
+path_to_model= "./mistral-7b-v0.1.Q5_K_M.gguf"
 #flags
 parser = OptionParser()
 #group = parser.add_argument_group('group')
