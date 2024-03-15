@@ -1,4 +1,5 @@
 use std::process::Command;
+use std::fs;
 ///the purpose of this tool is to generate recommendations and then update
 ///autocomplete.sh
 ///
@@ -16,9 +17,8 @@ fn add_auto_complete_to_sh(input_string: &str, fp: &str){
 ///Uses comgen -c in an abi call to get all installed commands to generate
 ///recommendations. Only should be used at beginning, not for fine
 ///tuning recommendations
-fn get_initial_commands() -> Vec<u8>{
-    let commands = Command::new("sh")
-        .arg("compgen")
+pub fn get_initial_commands() -> Vec<u8>{
+    let commands = Command::new("compgen")
         .arg("-c")
         .output()
         .expect("failed to execute compgen");
@@ -27,8 +27,10 @@ fn get_initial_commands() -> Vec<u8>{
 
 ///Takes a one column string .txt or .tsv containing previously run commands
 ///dataset, returns a newline seperated string or csv 
-pub fn get_user_gen_commands(commands_fp: &str, ret_type: &str) -> &str{
-    return ""
+pub fn get_user_gen_commands<'a>(commands_fp: &'a str) -> String{
+    return fs::read_to_string(commands_fp)
+        .expect("Failed to read command text file");
+    
 } 
 
 ///Generates reccomendation strings using llama_cpp, formats them properly
@@ -38,6 +40,3 @@ pub fn generate_recommendation_strings(model_path:&str) -> &str {
     return ""
 }
 
-fn main(){
-    println!(get_initial_commands())
-}
