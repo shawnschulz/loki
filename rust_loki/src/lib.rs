@@ -1,5 +1,8 @@
 use std::process::Command;
+use ::std::io::{self, Write};
 use std::fs;
+use std::str;
+
 ///the purpose of this tool is to generate recommendations and then update
 ///autocomplete.sh
 ///
@@ -28,15 +31,27 @@ pub fn get_initial_commands() -> Vec<u8>{
 ///Takes a one column string .txt or .tsv containing previously run commands
 ///dataset, returns a newline seperated string or csv 
 pub fn get_user_gen_commands<'a>(commands_fp: &'a str) -> String{
-    return fs::read_to_string(commands_fp)
-        .expect("Failed to read command text file");
+    let _ret = fs::read_to_string(commands_fp).expect("Failed to read command text file");
+    return fs::read_to_string(commands_fp).expect("Failed to read command text file")
     
 } 
+
 
 ///Generates reccomendation strings using llama_cpp, formats them properly
 ///and appends all to auto_complete.sh. if possible, sources it too
 ///For formatting, all strings need to use "lo" for the autocomplete
-pub fn generate_recommendation_strings(model_path:&str) -> &str {
+///Command has to be formatted properly so commands_fp can be inputted correctly
+pub fn generate_recommendation_strings<'a>(command_path:&'a str, commands_fp: &'a str) -> &'a str {
+    let llama_cpp_call = Command::new(&command_path)
+        .arg("-f")
+        .arg(get_user_gen_commands(commands_fp))
+        .output()
+        .expect("failed to call lama_cpp");
+    let mut buffer = fs::File::create("commands_recommendations.txt").expect("failed to create file");
+    let recommenation_string = str::from_utf8(&llama_cpp_call.stdout).expect("invalid utf8 sequence");
+    buffer.write_all(recommenation_string.as_bytes()).expect("failed to write recommendations");
+
+
     return ""
 }
 
