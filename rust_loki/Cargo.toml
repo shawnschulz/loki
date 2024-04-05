@@ -2,3 +2,9 @@
 name = "rust_loki"
 version = "0.1.0"
 edition = "2021"
+
+[dependencies]
+candle-core = { git = "https://github.com/huggingface/candle.git", version = "0.4.2", features = ["cuda"] }
+hf-hub = "0.3.2"
+safetensors = "0.4.2"
+tokenizers = "0.15.2"
