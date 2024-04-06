@@ -86,19 +86,54 @@ pub fn generate_recommendation_strings<'a>(command_path:&'a str, commands_fp: &'
     use std::option;
     let temperature: Option<f64> = Some(0.700000);
     let top_p: Option<f64> = Some(0.900000);
-    let sample_len: usize = 
+    let sample_len: usize = 10000;
     let mut logits_processor = LogitsProcessor::new(42069, temperature, top_p);
     let start_gen = std::time::Instant::now();
     let mut index_pos = 0;
-    let mut token_generated = 0;
+    let mut token_generated = 0usize;
     for index in 0..args.sample_len {
         let (context_size, context_index) if cache.use_kv_cache && index >0 {
             (1, index_pos)
         } else {
             (tokens.len(), 0)
         };
-
+        let ctxt = &tokens[tokens.len().saturating_sub(context_size)..];
+        let input = Tensor::new(ctxt, &device)?.unsqueeze(0)?;
+        let logits = mistral.forward(&input, context_index, &mut cache)?;
+        //remember to add a config file people can use to change repeat penalty
+        //etc that loki uses for its models, 
+        //also would be nice if we could use a macro so user can just specify
+        //a valid hf_hub model to use 
+        let logits = logits.squeeze(0)?;
+        let next_token = self.logits_processor.sample(&logits)?;
+        tokens.push(next_token);
+        token_generated += 1;
+        if next_token == eos_token {
+            break;
+        }
+        if let Some(t) = self.tokenizer.next_token(next_token)? {
+            print!("{t}");
+            std::io::stdout().flush()?;
+        }
+    }
+    let dt = start_gen.elapsed();
+    if let Some(rest) = self.tokenizer.decode_rest().map_err(E::msg)? {
+        print!("{rest}");
+    }
+    std::io::stdout().flush()?;
+    //obv can't just print text we gotta decode tokens, format string then
+    //write to file
+    println!(
+        "\n{generated_tokens} tokens generated ({:.2} token/s)",
+        generated_tokens as f64 / dt.as_secs_f64(),
+    );
+    Ok(());
 
     return ""
 }
+
+
+
+
+
 
